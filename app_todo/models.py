@@ -1,16 +1,31 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+
+
+def _get_default_date():
+    return timezone.now() + timedelta(days=1)
 
 
 class Note(models.Model):
-    STATUS = (
-        (0, 'Активно'),
-        (1, 'Отложено'),
-        (2, 'Выполнено'),
-    )
+    class StatusType(models.TextChoices):
+        ACTIVE = 'active', _('Активно')
+        DRAFT = 'draft', _('Отложено')
+        DONE = 'done', _('Выполнено')
+
     title = models.CharField(max_length=160, verbose_name='Название')
-    is_important = models.BooleanField(default=False, blank=True, verbose_name='Важная')
-    is_public = models.BooleanField(default=False, blank=True, verbose_name='Публичная')
-    create_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
-    status = models.IntegerField(default=0, choices=STATUS, blank=True, verbose_name='Статус выполнения')
-    author = models.ForeignKey(User, related_name='authors', on_delete=models.PROTECT, blank=True, default='')
+    important = models.BooleanField(default=False, verbose_name='Важная')
+    public = models.BooleanField(default=False, blank=True, verbose_name='Публичная')
+    create_at = models.DateField('Дата', default=_get_default_date)
+    status = models.CharField('Состояние', max_length=10, choices=StatusType.choices, default=StatusType.DRAFT)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Автор')
+    views = models.IntegerField('Количество просмотров', default=0)
+
+    def __str__(self):
+        return f'{self.title}'
+
+    # class Meta:
+    #     ordering = ('-create_at',)
