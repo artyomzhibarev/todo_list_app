@@ -5,7 +5,7 @@ from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from todo_list_app.settings_local import SERVER_VERSION
 from .filters import NoteFilter
 from .models import Note
-from .serializers import NoteSerializer, CommentCreateSerializer
+from .serializers import NoteSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
@@ -64,17 +64,18 @@ class NoteListCreateViewSet(RetrieveModelMixin,
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
-        note = self.get_object()
-        if note.author == request.user:
-            self.perform_destroy(note)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        instance = self.get_object()
+        if instance.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.author != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
         partial = kwargs.pop('partial', False)
+        print(partial)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -96,7 +97,7 @@ class NoteListCreateViewSet(RetrieveModelMixin,
     #     return super().update(request, *args, **kwargs)
 
 
-class TestTemplateView(View):
+class AboutView(View):
     def get(self, request):
         context = {
             'SERVER_VERSION': SERVER_VERSION,
@@ -105,14 +106,14 @@ class TestTemplateView(View):
         return render(request, 'about.html', context=context)
 
 
-class CommentCreateViewSet(CreateModelMixin,
-                           UpdateModelMixin,
-                           DestroyModelMixin,
-                           GenericViewSet):
-    queryset = Note.objects.all()
-    serializer_class = CommentCreateSerializer
-
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+# class CommentCreateViewSet(CreateModelMixin,
+#                            UpdateModelMixin,
+#                            DestroyModelMixin,
+#                            GenericViewSet):
+#     queryset = Note.objects.all()
+#     serializer_class = CommentCreateSerializer
+#
+#     permission_classes = (IsAuthenticatedOrReadOnly,)
+#
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user)

@@ -29,22 +29,22 @@ class Note(models.Model):
         return f'{self.title}'
 
 
-class Comment(models.Model):
-    NOTE_RATING = (
-        (0, 'Без оценки'),
-        (1, 'Ужасно'),
-        (2, 'Плохо'),
-        (3, 'Нормально'),
-        (4, 'Хорошо'),
-        (5, 'Отлично'),
-    )
-
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
-    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_query_name='comments')
-    create_at = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
-    message = models.TextField(default='', blank=True, verbose_name='Комментарий')
-    rating = models.IntegerField(choices=NOTE_RATING, default=0, verbose_name='Оценка')
-
-    class Meta:
-        ordering = ('create_at',)
+# class Comment(models.Model):
+#     NOTE_RATING = (
+#         (0, 'Без оценки'),
+#         (1, 'Ужасно'),
+#         (2, 'Плохо'),
+#         (3, 'Нормально'),
+#         (4, 'Хорошо'),
+#         (5, 'Отлично'),
+#     )
+#
+#     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+#     note = models.ForeignKey(Note, on_delete=models.CASCADE, related_query_name='comments')
+#     create_at = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
+#     message = models.TextField(default='', blank=True, verbose_name='Комментарий')
+#     rating = models.IntegerField(choices=NOTE_RATING, default=0, verbose_name='Оценка')
+#
+#     class Meta:
+#         ordering = ('create_at',)
 
