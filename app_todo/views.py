@@ -1,5 +1,9 @@
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
+from django.views import View
 from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 
+from todo_list_app.settings_local import SERVER_VERSION
 from .filters import NoteFilter
 from .models import Note
 from .serializers import NoteSerializer
@@ -73,3 +77,11 @@ class NoteListCreateViewSet(RetrieveModelMixin,
             return Response(status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
+
+class TestTemplateView(View):
+    def get(self, request):
+        context = {
+            'SERVER_VERSION': SERVER_VERSION,
+            'current_user': request.user,
+        }
+        return render(request, 'about.html', context=context)
