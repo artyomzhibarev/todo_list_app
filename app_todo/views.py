@@ -1,4 +1,3 @@
-from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views import View
 from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
@@ -6,10 +5,10 @@ from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from todo_list_app.settings_local import SERVER_VERSION
 from .filters import NoteFilter
 from .models import Note
-from .serializers import NoteSerializer
+from .serializers import NoteSerializer, CommentCreateSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, \
     DestroyModelMixin
@@ -75,7 +74,26 @@ class NoteListCreateViewSet(RetrieveModelMixin,
         instance = self.get_object()
         if instance.author != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        return super().update(request, *args, **kwargs)
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        print(request.method)
+        return Response(serializer.data)
+
+    # def update(self, request, *args, **kwargs):
+    #     print(request.method)
+    #     note = self.get_object()
+    #     if note.author != request.user:
+    #         return Response(status=status.HTTP_403_FORBIDDEN)
+    #     serializer: NoteSerializer = self.get_serializer(data=request.data)
+    #     if not serializer.is_valid():
+    #         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     serializer.save(author=request.user)
+    #     return super().update(request, *args, **kwargs)
 
 
 class TestTemplateView(View):
@@ -85,3 +103,16 @@ class TestTemplateView(View):
             'current_user': request.user,
         }
         return render(request, 'about.html', context=context)
+
+
+class CommentCreateViewSet(CreateModelMixin,
+                           UpdateModelMixin,
+                           DestroyModelMixin,
+                           GenericViewSet):
+    queryset = Note.objects.all()
+    serializer_class = CommentCreateSerializer
+
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
