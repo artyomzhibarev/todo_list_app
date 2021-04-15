@@ -27,3 +27,7 @@ class NoteFilter(drf_filter.FilterSet):
         model = Note
         fields = ('by_important', 'by_status', 'by_public', 'min_view', 'max_view', 'author', 'author_name',
                   'by_title_contain')
+
+
+class CommentFilter(drf_filter.FilterSet):
+    by_rating = drf_filter.NumberFilter(field_name='rating')
