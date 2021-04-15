@@ -79,9 +79,9 @@ class CommentCreateViewSet(CreateModelMixin,
                            UpdateModelMixin,
                            DestroyModelMixin,
                            GenericViewSet):
+    permission_classes = (IsAuthenticated,)
     queryset = Comment.objects.all()
     serializer_class = CommentCreateSerializer
-    permission_classes = (IsAuthenticated,)
 
     # def create(self, request, *args, **kwargs):
     #     serializer: CommentCreateSerializer = self.get_serializer(data=request.data)

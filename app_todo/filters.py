@@ -1,6 +1,6 @@
 from django_filters import rest_framework as drf_filter
 
-from .models import Note
+from .models import Note, Comment
 
 
 class NoteFilter(drf_filter.FilterSet):
@@ -10,6 +10,7 @@ class NoteFilter(drf_filter.FilterSet):
 
     min_view = drf_filter.NumberFilter('views',
                                        lookup_expr='gte')
+
     max_view = drf_filter.NumberFilter('views',
                                        lookup_expr='lte')
 
@@ -31,3 +32,7 @@ class NoteFilter(drf_filter.FilterSet):
 
 class CommentFilter(drf_filter.FilterSet):
     by_rating = drf_filter.NumberFilter(field_name='rating')
+
+    class Meta:
+        model = Comment
+        fields = ('by_rating', )
